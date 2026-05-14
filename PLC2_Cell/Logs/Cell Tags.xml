@@ -1,0 +1,10 @@
+<?xml version="1.0" standalone="no"?>
+<?xml-stylesheet type='text/xsl' href='MassDataHandlerLogFile.xsl'?>
+<LogFile titleName="Cell Tags.xml" projectName="C:\Users\sebas\Desktop\Cell Tags.xlsx" typeText="Type" messageText="Message" timeText="Time">
+  <LogEntry type="Warning" dateTime="11:32:05 AM">
+    <Message>The version ID is missing in the XLSX file. It is assumed that this is the latest version.</Message>
+  </LogEntry>
+  <LogEntry type="Warning" dateTime="11:32:05 AM">
+    <Message>The Excel document does not contain a "PLC Tags" sheet.</Message>
+  </LogEntry>
+</LogFile>
