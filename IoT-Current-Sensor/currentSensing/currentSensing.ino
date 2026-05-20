@@ -3,21 +3,32 @@
 
 Adafruit_ADS1115 ads;
 
-// ADS1115
-const float ADS_VREF = 4.096;      // GAIN_ONE
-const float ADS_MAX = 32768.0;
+// =========================
+// ADC CONFIGURATION
+// =========================
 
-// Offset virtual
-const float OFFSET = 1.65;
+constexpr float ADS_VREF = 4.096f;
+constexpr float ADS_MAX = 32768.0f;
 
-// Burden resistor
-const float RESISTOR = 1000;
+// =========================
+// SENSOR CONFIGURATION
+// =========================
 
-// Muestreo
-const int NUM_SAMPLES = 2000;
+constexpr float OFFSET_VOLTAGE = 1.64f;
 
-// Número de picos a promediar
-const int NUM_PEAKS = 800;
+constexpr float BURDEN_RESISTOR = 150.0f;
+
+constexpr float SCT013_RATIO = 2000.0f;
+
+constexpr float ADC_CALIBRATION = 1.0052f;
+
+// =========================
+// SAMPLING CONFIGURATION
+// =========================
+
+constexpr int SAMPLE_COUNT = 500;
+
+constexpr int SAMPLE_DELAY_US = 200;
 
 void setup() {
 
@@ -27,92 +38,63 @@ void setup() {
 
   if (!ads.begin()) {
 
-    Serial.println("ADS1115 no encontrado");
+    Serial.println("ADS1115 not found");
 
-    while (1);
+    while (1)
+      ;
   }
 
   // ±4.096V
   ads.setGain(GAIN_ONE);
+  ads.setDataRate(RATE_ADS1115_860SPS);
 
   delay(1000);
 
-  Serial.println("Leyendo corriente RMS...");
+  Serial.println("Reading voltage...");
 }
 
 void loop() {
 
-  float peaks[NUM_PEAKS];
+  int16_t raw;
 
-  // Inicializar arreglo
-  for (int i = 0; i < NUM_PEAKS; i++) {
-    peaks[i] = 0;
-  }
+  float voltage;
 
-  // Muestreo
-  for (int i = 0; i < NUM_SAMPLES; i++) {
+  float maxPeak = OFFSET_VOLTAGE;
+  float minPeak = OFFSET_VOLTAGE;
 
-    // Leer ADS1115 canal A0
-    int16_t raw = ads.readADC_SingleEnded(0);
+  // get numerous readings from the adc to get min and max values
+  for (int i = 0; i < SAMPLE_COUNT; i++) {
 
-    // ADC -> volts
-    float voltage = (raw * ADS_VREF) / ADS_MAX;
+    raw = ads.readADC_SingleEnded(0);
 
-    // Quitar offset
-    float acVoltage = voltage - OFFSET;
+    voltage = (raw * ADS_VREF) / ADS_MAX;
 
-    // Valor absoluto
-    float absVoltage = abs(acVoltage);
+    voltage *= ADC_CALIBRATION;
 
-    // Buscar el menor pico guardado
-    int minIndex = 0;
-
-    for (int j = 1; j < NUM_PEAKS; j++) {
-
-      if (peaks[j] < peaks[minIndex]) {
-        minIndex = j;
-      }
+    if (voltage > maxPeak) {
+      maxPeak = voltage;
     }
 
-    // Reemplazar si el valor actual es mayor
-    if (absVoltage > peaks[minIndex]) {
-      peaks[minIndex] = absVoltage;
+    if (voltage < minPeak) {
+      minPeak = voltage;
     }
 
-    delayMicroseconds(1000);
+    delayMicroseconds(SAMPLE_DELAY_US);
   }
 
-  // Promediar picos máximos
-  float vPeak = 0;
+  // get peak to peak voltage based on the highest and lowest voltages
+  float vpp = maxPeak - minPeak;
 
-  for (int i = 0; i < NUM_PEAKS; i++) {
-    vPeak += peaks[i];
-  }
+  // rms voltage formula
+  float vrms = 0.3536f * vpp;
 
-  vPeak /= NUM_PEAKS;
+  // converting from rms voltage to rms current
+  float irms = vrms / BURDEN_RESISTOR;
 
-  // Vrms para senoide
-  float vrms = vPeak / sqrt(2.0);
+  // scaling current based on the SCT013's ratio
+  float loadCurrent = irms * SCT013_RATIO;
 
-  // Corriente RMS secundaria
-  float irms = vrms / RESISTOR;
-
-  // Escalado SCT013-000
-  float imeasure = irms * 2000.0;
-
-  Serial.print("Vpeak: ");
-  Serial.print(vPeak, 4);
-  Serial.println(" V");
-
-  Serial.print("Vrms: ");
-  Serial.print(vrms, 4);
-  Serial.println(" V");
-
-  Serial.print("Measured current: ");
-  Serial.print(imeasure, 3);
-  Serial.println(" A");
-
-  Serial.println();
+  Serial.println(loadCurrent);
 
   delay(500);
 }
