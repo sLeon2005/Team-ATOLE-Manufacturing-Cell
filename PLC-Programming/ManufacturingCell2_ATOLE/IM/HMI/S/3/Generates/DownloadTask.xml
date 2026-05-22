@@ -2,10 +2,10 @@
 <DownloadTask>
   <ProjectInfo
     DeviceVersion="17.0.0.0"
-    CreationTime="2026-05-14 19:07:25 (UTC)"
+    CreationTime="2026-05-21 23:05:46 (UTC)"
     Runtime="SMART"
-    RtProjectName="PLC2_Cell.HMI_1[KTP700 Basic PN]"
-    RtProjectFolderName="PLC2_Cell.HMI_1[KTP700 Basic PN]"
+    RtProjectName="ManufacturingCell2_ATOLE.Machining_HMI[KTP700 Basic PN]"
+    RtProjectFolderName="ManufacturingCell2_ATOLE.Machining_HMI[KTP700 Basic PN]"
     DeviceType="KTP700_Basic"
     DisplayOrientation="0"
     RTReleaseNo="17.0.0.0"
