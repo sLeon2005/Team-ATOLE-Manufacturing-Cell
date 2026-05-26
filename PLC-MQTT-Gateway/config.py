@@ -1,4 +1,4 @@
-PLC_IP = "192.168.0.3"
+PLC_IP = "your_plc_ip"
 
-MQTT_BROKER = "10.25.110.236"
-MQTT_PORT = 1883
+MQTT_BROKER = "your_ip"
+MQTT_PORT = 1234
