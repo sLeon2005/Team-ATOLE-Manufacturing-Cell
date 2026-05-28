@@ -1,18 +1,34 @@
 from config import *
 
 import snap7
-from snap7.util import get_int, get_bool
+from snap7.util import get_int, get_bool, get_real, get_string
 import paho.mqtt.client as mqtt
 import time
 import sys
 
 # PLC CONFIG
-DB_NUMBER = 2
+DB_NUMBER = 99
 PLC_START_ADDRESS = 0
-PLC_SIZE = 3   # bytes a leer
+PLC_SIZE = 62   # bytes a leer
 
-# MQTT CONFIG
-TOPIC = "yopublico"
+# MQTT TOPICS
+TOPIC = "yopublico" #soon to be discarded
+
+TOPIC_EMERGENCY_STOP_PNEU = "factory/safety/emergencyStopPneumatics"
+TOPIC_EMERGENCY_STOP_MAC = "factory/safety/emergencyStopMachining"
+
+TOPIC_COBOTS_MOVING = "factory/cobots/moving"
+
+TOPIC_PNEUMATIC_POWER = "factory/pneumatics/power"
+TOPIC_MACHINING_POWER = "factory/machining/power"
+
+TOPIC_AIR_PRESSURE = "factory/pneumatics/airPressure"
+
+TOPIC_CHOCOLATE_UNITS = "factory/production/chocolateUnitsFinished"
+TOPIC_VANILLA_UNITS = "factory/production/vanillaUnitsFinished"
+TOPIC_STRAWBERRY_UNITS = "factory/production/strawberryUnitsFinished"
+
+TOPIC_ONLINE_USER = "factory/system/onlineUser"
 
 # INIT PLC
 try:
@@ -81,37 +97,70 @@ except Exception as e:
     sys.exit()
 
 # MAIN LOOP
+# MAIN LOOP
 print("\nGateway started successfully.")
 
 while True:
 
     try:
+
         # Read PLC DB
         data = plc.db_read(DB_NUMBER, PLC_START_ADDRESS, PLC_SIZE)
 
-        # INT
-        counterValue = get_int(data, 0)
+        emergencyStop_Pneu = get_bool(data, 0, 0)
+        emergencyStop_Mac = get_bool(data, 0, 1)
+        cobotsMoving = get_bool(data, 0, 2)
 
-        # BOOLS
-        greenBTN = get_bool(data, 2, 0)
-        redBTN = get_bool(data, 2, 1)
-        counterFinished = get_bool(data, 2, 2)
+        pneumaticPower = get_real(data, 2)
+        machiningPower = get_real(data, 6)
 
-        # Console output
+        airPressure = get_real(data, 10)
+
+        chocolateUnitsFinished = get_int(data, 14)
+        vanillaUnitsFinished = get_int(data, 16)
+        strawberryUnitsFinished = get_int(data, 18)
+
+        onlineUser = get_string(data, 20)
+
         print("\n-------------------")
-        print(f"Counter Value: {counterValue}")
-        print(f"Green Button: {greenBTN}")
-        print(f"Red Button: {redBTN}")
-        print(f"Counter Finished: {counterFinished}")
 
-        # MQTT Publish
-        client.publish(TOPIC, counterValue)
+        print(f"Emergency Stop Pneumatics: {emergencyStop_Pneu}")
+        print(f"Emergency Stop Machining: {emergencyStop_Mac}")
+        print(f"Cobots Moving: {cobotsMoving}")
 
-        print(f"MQTT Publish Success -> Topic: '{TOPIC}' | Payload: {counterValue}")
+        print(f"Pneumatic Power: {pneumaticPower}")
+        print(f"Machining Power: {machiningPower}")
+        print(f"Air Pressure: {airPressure}")
 
-        time.sleep(0.5)
+        print(f"Chocolate Units Finished: {chocolateUnitsFinished}")
+        print(f"Vanilla Units Finished: {vanillaUnitsFinished}")
+        print(f"Strawberry Units Finished: {strawberryUnitsFinished}")
+
+        print(f"Online User: {onlineUser}")
+
+        # MQTT PUBLISH
+        client.publish(TOPIC_EMERGENCY_STOP_PNEU, str(emergencyStop_Pneu))
+        client.publish(TOPIC_EMERGENCY_STOP_MAC, str(emergencyStop_Mac))
+
+        client.publish(TOPIC_COBOTS_MOVING, str(cobotsMoving))
+
+        client.publish(TOPIC_PNEUMATIC_POWER, str(pneumaticPower))
+        client.publish(TOPIC_MACHINING_POWER, str(machiningPower))
+
+        client.publish(TOPIC_AIR_PRESSURE, str(airPressure))
+
+        client.publish(TOPIC_CHOCOLATE_UNITS, str(chocolateUnitsFinished))
+        client.publish(TOPIC_VANILLA_UNITS, str(vanillaUnitsFinished))
+        client.publish(TOPIC_STRAWBERRY_UNITS, str(strawberryUnitsFinished))
+
+        client.publish(TOPIC_ONLINE_USER, str(onlineUser))
+
+        print("\nMQTT Publish Success")
+
+        time.sleep(1)
 
     except Exception as e:
+
         print("\nRUNTIME ERROR")
         print(f"Reason: {e}")
 
@@ -121,9 +170,9 @@ while True:
         print("- Network interruption")
         print("- Invalid DB address")
         print("- Incorrect DB size")
+        print("- String size mismatch")
 
         time.sleep(2)
-
 # CLEANUP
 try:
     plc.disconnect()
