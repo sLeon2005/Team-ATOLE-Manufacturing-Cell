@@ -1,3 +1,40 @@
+#
+# This application reads process data from a Siemens S7-1200
+# PLC using Snap7 and publishes the data to an MQTT broker.
+#
+# Requirements:
+#
+# 1. Enable PUT/GET communication in the PLC.
+#
+# 2. Disable Optimized Block Access in the PLC Data Block.
+#
+# 3. Configure PLC and MQTT settings in:
+#
+#       config.py
+#
+# 4. Install required Python packages:
+#
+#       pip install python-snap7
+#       pip install paho-mqtt
+#
+# Configuration:
+#
+# The project uses a local configuration file:
+#
+#       config.py
+#
+# Example:
+#
+#       PLC_IP = "192.168.0.3"
+#
+#       MQTT_BROKER = "192.168.0.100"
+#       MQTT_PORT = 1883
+#
+# Author:
+#
+#       ATOLE S.A. de C.V.
+#
+
 from config import *
 
 import snap7
@@ -9,7 +46,7 @@ import sys
 # PLC CONFIG
 DB_NUMBER = 99
 PLC_START_ADDRESS = 0
-PLC_SIZE = 62   # bytes a leer
+PLC_SIZE = 94   # bytes a leer
 
 # MQTT TOPICS
 TOPIC = "yopublico" #soon to be discarded
@@ -31,6 +68,7 @@ TOPIC_STRAWBERRY_UNITS = "factory/production/strawberryUnitsFinished"
 TOPIC_TOTAL_UNITS = "factory/production/totalUnitsFinished"
 
 TOPIC_ONLINE_USER = "factory/system/onlineUser"
+TOPIC_ONLINE_ROLE = "factory/system/onlineRole"
 
 # INIT PLC
 try:
@@ -125,6 +163,7 @@ while True:
         totalUnitsFinished = chocolateUnitsFinished + vanillaUnitsFinished + strawberryUnitsFinished
 
         onlineUser = get_string(data, 20)
+        onlineRole = get_string(data, 62)
 
         print("\n-------------------")
 
@@ -144,6 +183,7 @@ while True:
         print(f"Total Units Finished: {totalUnitsFinished}")
 
         print(f"Online User: {onlineUser}")
+        print(f"Online Role: {onlineRole}")
 
         # MQTT PUBLISH
         client.publish(TOPIC_EMERGENCY_STOP_PNEU, str(emergencyStop_Pneu))
@@ -163,6 +203,7 @@ while True:
         client.publish(TOPIC_TOTAL_UNITS, str(totalUnitsFinished))
 
         client.publish(TOPIC_ONLINE_USER, str(onlineUser))
+        client.publish(TOPIC_ONLINE_ROLE, str(onlineRole))
 
         print("\nMQTT Publish Success")
 
