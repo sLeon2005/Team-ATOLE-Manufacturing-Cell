@@ -21,12 +21,14 @@ TOPIC_COBOTS_MOVING = "factory/cobots/moving"
 
 TOPIC_PNEUMATIC_POWER = "factory/pneumatics/power"
 TOPIC_MACHINING_POWER = "factory/machining/power"
+TOPIC_TOTAL_POWER = "factory/system/totalPower"
 
 TOPIC_AIR_PRESSURE = "factory/pneumatics/airPressure"
 
 TOPIC_CHOCOLATE_UNITS = "factory/production/chocolateUnitsFinished"
 TOPIC_VANILLA_UNITS = "factory/production/vanillaUnitsFinished"
 TOPIC_STRAWBERRY_UNITS = "factory/production/strawberryUnitsFinished"
+TOPIC_TOTAL_UNITS = "factory/production/totalUnitsFinished"
 
 TOPIC_ONLINE_USER = "factory/system/onlineUser"
 
@@ -113,12 +115,14 @@ while True:
 
         pneumaticPower = get_real(data, 2)
         machiningPower = get_real(data, 6)
+        totalPower = pneumaticPower + machiningPower
 
         airPressure = get_real(data, 10)
 
         chocolateUnitsFinished = get_int(data, 14)
         vanillaUnitsFinished = get_int(data, 16)
         strawberryUnitsFinished = get_int(data, 18)
+        totalUnitsFinished = chocolateUnitsFinished + vanillaUnitsFinished + strawberryUnitsFinished
 
         onlineUser = get_string(data, 20)
 
@@ -130,11 +134,14 @@ while True:
 
         print(f"Pneumatic Power: {pneumaticPower}")
         print(f"Machining Power: {machiningPower}")
+        print(f"Total Power: {totalPower}")
+
         print(f"Air Pressure: {airPressure}")
 
         print(f"Chocolate Units Finished: {chocolateUnitsFinished}")
         print(f"Vanilla Units Finished: {vanillaUnitsFinished}")
         print(f"Strawberry Units Finished: {strawberryUnitsFinished}")
+        print(f"Total Units Finished: {totalUnitsFinished}")
 
         print(f"Online User: {onlineUser}")
 
@@ -146,12 +153,14 @@ while True:
 
         client.publish(TOPIC_PNEUMATIC_POWER, str(pneumaticPower))
         client.publish(TOPIC_MACHINING_POWER, str(machiningPower))
+        client.publish(TOPIC_TOTAL_POWER, str(totalPower))
 
         client.publish(TOPIC_AIR_PRESSURE, str(airPressure))
 
         client.publish(TOPIC_CHOCOLATE_UNITS, str(chocolateUnitsFinished))
         client.publish(TOPIC_VANILLA_UNITS, str(vanillaUnitsFinished))
         client.publish(TOPIC_STRAWBERRY_UNITS, str(strawberryUnitsFinished))
+        client.publish(TOPIC_TOTAL_UNITS, str(totalUnitsFinished))
 
         client.publish(TOPIC_ONLINE_USER, str(onlineUser))
 
