@@ -49,26 +49,24 @@ PLC_START_ADDRESS = 0
 PLC_SIZE = 94   # bytes a leer
 
 # MQTT TOPICS
-TOPIC = "yopublico" #soon to be discarded
+TOPIC_EMERGENCY_STOP_PNEU = "pneumatic/emergency"
+TOPIC_EMERGENCY_STOP_MAC = "machining/emergency"
 
-TOPIC_EMERGENCY_STOP_PNEU = "factory/safety/emergencyStopPneumatics"
-TOPIC_EMERGENCY_STOP_MAC = "factory/safety/emergencyStopMachining"
+TOPIC_COBOTS_MOVING = "cobot/moving"
 
-TOPIC_COBOTS_MOVING = "factory/cobots/moving"
+TOPIC_PNEUMATIC_POWER = "pneumatic/power"
+TOPIC_MACHINING_POWER = "machining/power"
+TOPIC_TOTAL_POWER = "total/power"
 
-TOPIC_PNEUMATIC_POWER = "factory/pneumatics/power"
-TOPIC_MACHINING_POWER = "factory/machining/power"
-TOPIC_TOTAL_POWER = "factory/system/totalPower"
+TOPIC_AIR_PRESSURE = "pneumatic/pressure"
 
-TOPIC_AIR_PRESSURE = "factory/pneumatics/airPressure"
+TOPIC_CHOCOLATE_UNITS = "chocolate/delivered"
+TOPIC_VANILLA_UNITS = "vanilla/delivered"
+TOPIC_STRAWBERRY_UNITS = "strawberry/delivered"
+TOPIC_TOTAL_UNITS = "total/delivered"
 
-TOPIC_CHOCOLATE_UNITS = "factory/production/chocolateUnitsFinished"
-TOPIC_VANILLA_UNITS = "factory/production/vanillaUnitsFinished"
-TOPIC_STRAWBERRY_UNITS = "factory/production/strawberryUnitsFinished"
-TOPIC_TOTAL_UNITS = "factory/production/totalUnitsFinished"
-
-TOPIC_ONLINE_USER = "factory/system/onlineUser"
-TOPIC_ONLINE_ROLE = "factory/system/onlineRole"
+TOPIC_ONLINE_USER = "user/logged"
+TOPIC_ONLINE_ROLE = "role"
 
 # INIT PLC
 try:
