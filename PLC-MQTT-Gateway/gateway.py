@@ -57,6 +57,8 @@ TOPIC_COBOTS_MOVING = "cobot/moving"
 TOPIC_PNEUMATIC_POWER = "pneumatic/power"
 TOPIC_MACHINING_POWER = "machining/power"
 TOPIC_TOTAL_POWER = "total/power"
+TOPIC_TOTAL_ENERGY = "total/energy" # dos tópicos nuevos
+TOPIC_TOTAL_COST = "total/cost"
 
 TOPIC_AIR_PRESSURE = "pneumatic/pressure"
 
@@ -135,8 +137,13 @@ except Exception as e:
     sys.exit()
 
 # MAIN LOOP
-# MAIN LOOP
 print("\nGateway started successfully.")
+
+# CFE constant
+CFE_PRICE_PER_KWH = 3.5 # 3.50 MXN/kWh
+
+# Initialize energy consumption variable
+energyWh = 0.0
 
 while True:
 
@@ -151,7 +158,6 @@ while True:
 
         pneumaticPower = get_real(data, 2)
         machiningPower = get_real(data, 6)
-        totalPower = pneumaticPower + machiningPower
 
         airPressure = get_real(data, 10)
 
@@ -163,6 +169,14 @@ while True:
         onlineUser = get_string(data, 20)
         onlineRole = get_string(data, 62)
 
+        # Power and consumptions metrics
+        totalPower = pneumaticPower + machiningPower
+
+        deltaTimeHours = 1 / 3600 # based on 1 second loop delay
+        energyWh += totalPower * deltaTimeHours
+        energyKWh = energyWh / 1000
+        costMXN = energyKWh * CFE_PRICE_PER_KWH
+
         print("\n-------------------")
 
         print(f"Emergency Stop Pneumatics: {emergencyStop_Pneu}")
@@ -172,6 +186,8 @@ while True:
         print(f"Pneumatic Power: {pneumaticPower}")
         print(f"Machining Power: {machiningPower}")
         print(f"Total Power: {totalPower}")
+        print(f"Energy Consumed (kWh): {energyKWh:.6f}")
+        print(f"Estimated Cost (MXN): ${costMXN:.2f}")
 
         print(f"Air Pressure: {airPressure}")
 
@@ -192,6 +208,8 @@ while True:
         client.publish(TOPIC_PNEUMATIC_POWER, str(pneumaticPower))
         client.publish(TOPIC_MACHINING_POWER, str(machiningPower))
         client.publish(TOPIC_TOTAL_POWER, str(totalPower))
+        client.publish(TOPIC_TOTAL_ENERGY, str(energyKWh))
+        client.publish(TOPIC_TOTAL_COST, str(costMXN))
 
         client.publish(TOPIC_AIR_PRESSURE, str(airPressure))
 
