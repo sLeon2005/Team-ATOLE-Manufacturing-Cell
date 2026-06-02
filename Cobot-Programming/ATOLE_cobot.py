@@ -158,7 +158,7 @@ class RobotMain(object):
     #   straw    → CI1=LOW y CI2=LOW  → [1, 0, 0, 1, 1, 1, 1, 1]
     #   CI3      → CI3=LOW            → [1, 1, 1, 0, 1, 1, 1, 1]
     #
-    # ACK del PLC para tapa lista (patrones a confirmar con el equipo):
+    # ACK del PLC para tapa lista
     #   tapa choco    → CI0=LOW            → [0, 1, 1, 1, 1, 1, 1, 1]
     #   tapa vainilla → CI0=LOW y CI1=LOW  → [0, 0, 1, 1, 1, 1, 1, 1]
     #   tapa straw    → CI0=LOW y CI2=LOW  → [0, 1, 0, 1, 1, 1, 1, 1]
@@ -590,13 +590,13 @@ class RobotMain(object):
                     plc_ready = False
                     timeout_plc = time.monotonic() + 60.0
                     while self.is_alive and not plc_ready and time.monotonic() < timeout_plc:
-                        if flavor == 'choco'    and self._gpio_match([0, 1, 1, 1, 1, 1, 1, 1]):
+                        if flavor == 'choco'    and self._gpio_match([1, 0, 1, 0, 1, 1, 1, 1]):
                             print("PLC: tapa chocolate lista.")
                             plc_ready = True
-                        elif flavor == 'vainilla' and self._gpio_match([0, 0, 1, 1, 1, 1, 1, 1]):
+                        elif flavor == 'vainilla' and self._gpio_match([1, 1, 0, 0, 1, 1, 1, 1]):
                             print("PLC: tapa vainilla lista.")
                             plc_ready = True
-                        elif flavor == 'straw'    and self._gpio_match([0, 1, 0, 1, 1, 1, 1, 1]):
+                        elif flavor == 'straw'    and self._gpio_match([1, 0, 0, 0, 1, 1, 1, 1]):
                             print("PLC: tapa fresa lista.")
                             plc_ready = True
                         time.sleep(0.05)
