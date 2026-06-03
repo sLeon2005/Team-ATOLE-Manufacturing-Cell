@@ -26,9 +26,9 @@ struct Usuario {
 
 Usuario usuarios[] = {
   { "7F36B80C", "Sebastian Leon" },
-  { "AAAAAAAA", "Kintia Negrete" },
+  { "CC02C9DB", "Kintia Negrete" },
   { "BDFD8E6E", "Jesus Zamora" },
-  { "1A9A8CBE", "Francisco Hernandez" },
+  { "1A9A8CBE", "Francisco Hdez." },
   { "3AE092BE", "Yudy Perez" }
 };
 
@@ -83,7 +83,7 @@ void setRelays(byte valor) {
 byte obtenerNibble(String uid) {
 
   if (uid == "7F36B80C") return 0b0001;  // Sebastian
-  if (uid == "AAAAAAAA") return 0b0010;  // Kintia
+  if (uid == "CC02C9DB") return 0b0010;  // Kintia
   if (uid == "BDFD8E6E") return 0b0011;  // Jesus
   if (uid == "1A9A8CBE") return 0b0100;  // Francisco
   if (uid == "3AE092BE") return 0b0101;  // Yudy
