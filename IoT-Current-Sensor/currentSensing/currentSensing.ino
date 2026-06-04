@@ -49,7 +49,7 @@ enum MachineState {
 MachineState state = OFF;
 
 constexpr float off_threshold = 0.40f;
-constexpr float cutting_threshold = 6.87f;
+constexpr float cutting_threshold = 7.3f;
 constexpr float max_safe_current = 15.0f;
 
 unsigned long lastStateUpdate = 0;
