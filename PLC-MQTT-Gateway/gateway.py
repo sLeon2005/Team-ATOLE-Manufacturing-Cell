@@ -195,6 +195,8 @@ while True:
 
         print(f"Air Pressure: {airPressure}")
 
+        print(f"Cognex ID: {cognexID}")
+
         print(f"Chocolate Units Finished: {chocolateUnitsFinished}")
         print(f"Vanilla Units Finished: {vanillaUnitsFinished}")
         print(f"Strawberry Units Finished: {strawberryUnitsFinished}")
@@ -218,7 +220,7 @@ while True:
         client.publish(TOPIC_AIR_PRESSURE, str(airPressure))
 
         client.publish(TOPIC_COGNEX_ID, str(cognexID))
-        
+
         client.publish(TOPIC_CHOCOLATE_UNITS, str(chocolateUnitsFinished))
         client.publish(TOPIC_VANILLA_UNITS, str(vanillaUnitsFinished))
         client.publish(TOPIC_STRAWBERRY_UNITS, str(strawberryUnitsFinished))
