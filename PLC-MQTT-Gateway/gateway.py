@@ -46,7 +46,7 @@ import sys
 # PLC CONFIG
 DB_NUMBER = 99
 PLC_START_ADDRESS = 0
-PLC_SIZE = 94   # bytes a leer
+PLC_SIZE = 96   # bytes a leer
 
 # MQTT TOPICS
 TOPIC_EMERGENCY_STOP_PNEU = "pneumatic/emergency"
@@ -61,6 +61,8 @@ TOPIC_TOTAL_ENERGY = "total/energy" # dos tópicos nuevos
 TOPIC_TOTAL_COST = "total/cost"
 
 TOPIC_AIR_PRESSURE = "pneumatic/pressure"
+
+TOPIC_COGNEX_ID = "entry/type"
 
 TOPIC_CHOCOLATE_UNITS = "chocolate/delivered"
 TOPIC_VANILLA_UNITS = "vanilla/delivered"
@@ -161,6 +163,8 @@ while True:
 
         airPressure = get_real(data, 10)
 
+        cognexID = get_int(data, 94)
+
         chocolateUnitsFinished = get_int(data, 14)
         vanillaUnitsFinished = get_int(data, 16)
         strawberryUnitsFinished = get_int(data, 18)
@@ -213,6 +217,8 @@ while True:
 
         client.publish(TOPIC_AIR_PRESSURE, str(airPressure))
 
+        client.publish(TOPIC_COGNEX_ID, str(cognexID))
+        
         client.publish(TOPIC_CHOCOLATE_UNITS, str(chocolateUnitsFinished))
         client.publish(TOPIC_VANILLA_UNITS, str(vanillaUnitsFinished))
         client.publish(TOPIC_STRAWBERRY_UNITS, str(strawberryUnitsFinished))
