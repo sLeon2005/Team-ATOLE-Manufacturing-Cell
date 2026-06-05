@@ -268,7 +268,7 @@ class RobotMain(object):
         if not self._check_code(code, 'set_position'): return False
         time.sleep(0.8)
 
-        # PROTECCIÓN CONTRA CUELGUES: Habilitar y estabilizar antes de cerrar
+        # PROTECTION AGAINST HANGS: Enable and stabilize before closing
         self._arm.set_lite6_gripper_enable(True)
         time.sleep(0.2)
         code = self._arm.close_lite6_gripper()
@@ -405,7 +405,7 @@ class RobotMain(object):
         if not self._check_code(code, 'set_position'): return False
         time.sleep(0.8)
 
-        # PROTECCIÓN CONTRA CUELGUES: Pausa extra tras descenso a Z=10.0
+        # PROTECTION AGAINST HANGS: Extra pause after descending to Z=10.0
         self._arm.set_lite6_gripper_enable(True)
         time.sleep(0.3)
         code = self._arm.close_lite6_gripper()
@@ -504,16 +504,27 @@ class RobotMain(object):
         try:
             if flavor == 'choco':
                 print("[STEP G] Sending binary bus 010 (Chocolate) to PLC...")
-                self._arm.set_cgpio_digital(1, 0); self._arm.set_cgpio_digital(2, 1); self._arm.set_cgpio_digital(3, 0)
+                self._arm.set_cgpio_digital(1, 0)
+                self._arm.set_cgpio_digital(2, 1)
+                self._arm.set_cgpio_digital(3, 0)
             elif flavor == 'vainilla':
                 print("[STEP G] Sending binary bus 011 (Vanilla) to PLC...")
-                self._arm.set_cgpio_digital(1, 1); self._arm.set_cgpio_digital(2, 1); self._arm.set_cgpio_digital(3, 0)
+                self._arm.set_cgpio_digital(1, 1)
+                self._arm.set_cgpio_digital(2, 1)
+                self._arm.set_cgpio_digital(3, 0)
             elif flavor == 'straw':
                 print("[STEP G] Sending binary bus 100 (Strawberry) to PLC...")
-                self._arm.set_cgpio_digital(1, 0); self._arm.set_cgpio_digital(2, 0); self._arm.set_cgpio_digital(3, 1)
-            time.sleep(0.7)
-            # Reset outputs
-            self._arm.set_cgpio_digital(1, 0); self._arm.set_cgpio_digital(2, 0); self._arm.set_cgpio_digital(3, 0)
+                self._arm.set_cgpio_digital(1, 0)
+                self._arm.set_cgpio_digital(2, 0)
+                self._arm.set_cgpio_digital(3, 1)
+            
+            time.sleep(0.5) 
+            
+            # Reset all outputs to 0
+            self._arm.set_cgpio_digital(1, 0)
+            self._arm.set_cgpio_digital(2, 0)
+            self._arm.set_cgpio_digital(3, 0)
+            
         except Exception as e:
             self.pprint(f'GPIO Pallet output warning: {e}')
 
