@@ -11,7 +11,7 @@ from xarm.wrapper import XArmAPI
 # TASK STATE MACHINE DEFINITIONS
 # =============================================================================
 # 0 — Idle / Available slot
-# 1 — Base deposited on Conveyor 5 (Non-blocking wait for CI3 sensor)
+# 1 — Base deposited on Conveyor 1 (Non-blocking wait for CI3 sensor)
 # 2 — Transferred to Conveyor 6, CO1 sent (Non-blocking wait for PLC ACK)
 # 3 — PLC ACK received, ready to assemble lid (Waiting for robot availability)
 # 4 — Lid assembled, ready for palletizing (Waiting for robot availability)
@@ -20,8 +20,8 @@ from xarm.wrapper import XArmAPI
 # =============================================================================
 
 MAX_CONCURRENT = 2          # Maximum number of cakes being processed simultaneously
-CI3_TIMEOUT    = 120        # Seconds before aborting if Conveyor 5 end sensor (CI3) is not triggered
-PLC_TIMEOUT    = 120        # Seconds before aborting if PLC lid confirmation (ACK) is not received
+CI3_TIMEOUT    = 1200        # Seconds before aborting if Conveyor 1 end sensor (CI3) is not triggered
+PLC_TIMEOUT    = 1200        # Seconds before aborting if PLC lid confirmation (ACK) is not received
 
 
 class CakeTask:
@@ -52,10 +52,10 @@ class RobotMain(object):
         self.alive = True
         self._arm  = robot
         self._ignore_exit_state = False
-        self._tcp_speed  = 100
-        self._tcp_acc    = 2000
-        self._angle_speed = 20
-        self._angle_acc   = 500
+        self._tcp_speed  = 250
+        self._tcp_acc    = 3000
+        self._angle_speed = 50
+        self._angle_acc   = 1000
         self._vars  = {}
         self._funcs = {}
 
@@ -93,7 +93,7 @@ class RobotMain(object):
             (185.0, 240.0),
         ]
         self.PALLET_Z_PISO1   = 10.0
-        self.PALLET_Z_PISO2   = 45.0
+        self.PALLET_Z_PISO2   = 55.0
         self.global_pallet_count = 0
 
         # List of active tasks currently in the pipeline
@@ -241,13 +241,11 @@ class RobotMain(object):
     # MOTION SEQUENCES (STEPS)
     # =========================================================================
     def _pick_place_1st(self, flavor, idx):
-        """STEP A: Pick base from 1st floor of tray and deposit on the Cell."""
+        """STEP A: Pick base from 1st floor of tray and deposit on Conveyor 1."""
         target_x = self.X_1ST[idx]
         target_y = self.Y_FLAVOR[flavor]
         print(f"[STEP A] {flavor} col={idx+1}  x={target_x}, y={target_y}")
 
-        self._arm.set_lite6_gripper_enable(True)
-        time.sleep(0.2)
         code = self._arm.open_lite6_gripper()
         if not self._check_code(code, 'open_lite6_gripper'): return False
 
@@ -268,9 +266,6 @@ class RobotMain(object):
         if not self._check_code(code, 'set_position'): return False
         time.sleep(0.8)
 
-        # PROTECTION AGAINST HANGS: Enable and stabilize before closing
-        self._arm.set_lite6_gripper_enable(True)
-        time.sleep(0.2)
         code = self._arm.close_lite6_gripper()
         if not self._check_code(code, 'close_lite6_gripper'): return False
         time.sleep(1.2)
@@ -288,7 +283,7 @@ class RobotMain(object):
                                       speed=self._tcp_speed, mvacc=self._tcp_acc, radius=0.0, wait=False)
         if not self._check_code(code, 'set_position'): return False
 
-        # Approach drop zone
+        # Approach Conveyor 1 drop zone
         code = self._arm.set_position(*[-37.8, 243.4, 193.3, 180.0, 0.0, -45.0],
                                       speed=self._tcp_speed, mvacc=self._tcp_acc, radius=0.0, wait=True)
         if not self._check_code(code, 'set_position'): return False
@@ -299,8 +294,6 @@ class RobotMain(object):
                                       speed=self._tcp_speed, mvacc=self._tcp_acc, radius=0.0, wait=True)
         if not self._check_code(code, 'set_position'): return False
 
-        self._arm.set_lite6_gripper_enable(True)
-        time.sleep(0.2)
         code = self._arm.open_lite6_gripper()
         if not self._check_code(code, 'open_lite6_gripper'): return False
         time.sleep(0.8)
@@ -316,11 +309,8 @@ class RobotMain(object):
         return True
 
     def _conveyor_to_conveyor_transfer(self):
-        """STEP C: Transfer cake from Conveyor 5 to Assembly Station on Conveyor 6 (BLOCKING)."""
-        print("[STEP C] Transferring piece Conveyor 5 → Conveyor 6...")
-        
-        self._arm.set_lite6_gripper_enable(True)
-        time.sleep(0.2)
+        """STEP C: Transfer cake from Conveyor 1 to Assembly Station on Conveyor 2 (BLOCKING)."""
+        print("[STEP C] Transferring piece Conveyor 1 → Conveyor 2...")
         code = self._arm.open_lite6_gripper()
         if not self._check_code(code, 'open_lite6_gripper'): return False
 
@@ -334,8 +324,6 @@ class RobotMain(object):
         if not self._check_code(code, 'set_position'): return False
         time.sleep(1.0)
 
-        self._arm.set_lite6_gripper_enable(True)
-        time.sleep(0.2)
         code = self._arm.close_lite6_gripper()
         if not self._check_code(code, 'close_lite6_gripper'): return False
         time.sleep(1.4)
@@ -355,8 +343,6 @@ class RobotMain(object):
         if not self._check_code(code, 'set_position'): return False
         time.sleep(1.0)
 
-        self._arm.set_lite6_gripper_enable(True)
-        time.sleep(0.2)
         code = self._arm.open_lite6_gripper()
         if not self._check_code(code, 'open_lite6_gripper'): return False
         time.sleep(1.0)
@@ -367,8 +353,8 @@ class RobotMain(object):
         return True
 
     def _send_co1(self):
-        """STEP D: Send a 0.5s pulse on CO1 to inform the PLC the base is ready on Conveyor 6."""
-        print("[STEP D] Sending CO1=1 to PLC (base ready on Conveyor 6)...")
+        """STEP D: Send a 0.5s pulse on CO1 to inform the PLC the base is ready on Conveyor 2."""
+        print("[STEP D] Sending CO1=1 to PLC (base ready on Conveyor 2)...")
         try:
             self._arm.set_cgpio_digital(1, 1)
             self._arm.set_cgpio_digital(2, 0)
@@ -381,13 +367,11 @@ class RobotMain(object):
             self.pprint(f'GPIO CO1 warning: {e}')
 
     def _pick_place_2nd(self, flavor, idx):
-        """STEP F: Pick lid from 2nd floor of tray and assemble onto base on Conveyor 6 (BLOCKING)."""
+        """STEP F: Pick lid from 2nd floor of tray and assemble onto base on Conveyor 2 (BLOCKING)."""
         target_x = self.X_2ND[idx]
         target_y = self.Y_FLAVOR[flavor]
         print(f"[STEP F] {flavor} lid col={idx+1}  x={target_x}, y={target_y}")
 
-        self._arm.set_lite6_gripper_enable(True)
-        time.sleep(0.2)
         code = self._arm.open_lite6_gripper()
         if not self._check_code(code, 'open_lite6_gripper'): return False
 
@@ -405,9 +389,6 @@ class RobotMain(object):
         if not self._check_code(code, 'set_position'): return False
         time.sleep(0.8)
 
-        # PROTECTION AGAINST HANGS: Extra pause after descending to Z=10.0
-        self._arm.set_lite6_gripper_enable(True)
-        time.sleep(0.3)
         code = self._arm.close_lite6_gripper()
         if not self._check_code(code, 'close_lite6_gripper'): return False
         time.sleep(1.2)
@@ -427,8 +408,6 @@ class RobotMain(object):
                                       speed=self._tcp_speed, mvacc=self._tcp_acc, radius=0.0, wait=True)
         if not self._check_code(code, 'set_position'): return False
 
-        self._arm.set_lite6_gripper_enable(True)
-        time.sleep(0.2)
         code = self._arm.open_lite6_gripper()
         if not self._check_code(code, 'open_lite6_gripper'): return False
         time.sleep(0.8)
@@ -441,7 +420,7 @@ class RobotMain(object):
         return True
 
     def _paletizar_pastel(self, flavor):
-        """STEP G: Pick assembled cake from Conveyor 6 and place on 2x2 pallet grid (BLOCKING)."""
+        """STEP G: Pick assembled cake from Conveyor 2 and place on 2x2 pallet grid (BLOCKING)."""
         grid_idx           = self.global_pallet_count % 4
         piso               = 1 if self.global_pallet_count < 4 else 2
         target_x, target_y = self.PALLET_POSITIONS[grid_idx]
@@ -451,8 +430,6 @@ class RobotMain(object):
               f"Slot {grid_idx+1}/4, Floor {piso}, "
               f"dest=({target_x}, {target_y}, {target_z})")
 
-        self._arm.set_lite6_gripper_enable(True)
-        time.sleep(0.2)
         code = self._arm.open_lite6_gripper()
         if not self._check_code(code, 'open_lite6_gripper'): return False
 
@@ -465,8 +442,6 @@ class RobotMain(object):
         if not self._check_code(code, 'set_position'): return False
         time.sleep(0.8)
 
-        self._arm.set_lite6_gripper_enable(True)
-        time.sleep(0.2)
         code = self._arm.close_lite6_gripper()
         if not self._check_code(code, 'close_lite6_gripper'): return False
         time.sleep(1.2)
@@ -489,8 +464,6 @@ class RobotMain(object):
         if not self._check_code(code, 'set_position'): return False
         time.sleep(0.5)
 
-        self._arm.set_lite6_gripper_enable(True)
-        time.sleep(0.2)
         code = self._arm.open_lite6_gripper()
         if not self._check_code(code, 'open_lite6_gripper'): return False
         time.sleep(0.8)
@@ -504,27 +477,16 @@ class RobotMain(object):
         try:
             if flavor == 'choco':
                 print("[STEP G] Sending binary bus 010 (Chocolate) to PLC...")
-                self._arm.set_cgpio_digital(1, 0)
-                self._arm.set_cgpio_digital(2, 1)
-                self._arm.set_cgpio_digital(3, 0)
+                self._arm.set_cgpio_digital(1, 0); self._arm.set_cgpio_digital(2, 1); self._arm.set_cgpio_digital(3, 0)
             elif flavor == 'vainilla':
                 print("[STEP G] Sending binary bus 011 (Vanilla) to PLC...")
-                self._arm.set_cgpio_digital(1, 1)
-                self._arm.set_cgpio_digital(2, 1)
-                self._arm.set_cgpio_digital(3, 0)
+                self._arm.set_cgpio_digital(1, 1); self._arm.set_cgpio_digital(2, 1); self._arm.set_cgpio_digital(3, 0)
             elif flavor == 'straw':
                 print("[STEP G] Sending binary bus 100 (Strawberry) to PLC...")
-                self._arm.set_cgpio_digital(1, 0)
-                self._arm.set_cgpio_digital(2, 0)
-                self._arm.set_cgpio_digital(3, 1)
-            
-            time.sleep(0.5) 
-            
-            # Reset all outputs to 0
-            self._arm.set_cgpio_digital(1, 0)
-            self._arm.set_cgpio_digital(2, 0)
-            self._arm.set_cgpio_digital(3, 0)
-            
+                self._arm.set_cgpio_digital(1, 0); self._arm.set_cgpio_digital(2, 0); self._arm.set_cgpio_digital(3, 1)
+            time.sleep(0.7)
+            # Reset outputs
+            self._arm.set_cgpio_digital(1, 0); self._arm.set_cgpio_digital(2, 0); self._arm.set_cgpio_digital(3, 0)
         except Exception as e:
             self.pprint(f'GPIO Pallet output warning: {e}')
 
@@ -542,8 +504,6 @@ class RobotMain(object):
         label   = "FINAL LID" if es_tapa_final else "INTERMEDIATE LID"
         print(f"[SEP LID] Placing {label} — pick Z={z_pick}, place Z={z_place}")
 
-        self._arm.set_lite6_gripper_enable(True)
-        time.sleep(0.2)
         code = self._arm.open_lite6_gripper()
         if not self._check_code(code, 'open_lite6_gripper'): return False
 
@@ -556,8 +516,6 @@ class RobotMain(object):
         if not self._check_code(code, 'set_position'): return False
         time.sleep(0.8)
 
-        self._arm.set_lite6_gripper_enable(True)
-        time.sleep(0.2)
         code = self._arm.close_lite6_gripper()
         if not self._check_code(code, 'close_lite6_gripper'): return False
         time.sleep(1.2)
@@ -576,8 +534,6 @@ class RobotMain(object):
         if not self._check_code(code, 'set_position'): return False
         time.sleep(0.5)
 
-        self._arm.set_lite6_gripper_enable(True)
-        time.sleep(0.2)
         code = self._arm.open_lite6_gripper()
         if not self._check_code(code, 'open_lite6_gripper'): return False
         time.sleep(0.8)
@@ -679,7 +635,7 @@ class RobotMain(object):
                     task.state = 6
                     action_taken = True
 
-                # PRIORITY 2: Prevent Conveyor 5 jam (Transfer)
+                # PRIORITY 2: Prevent Conveyor 1 jam (Transfer)
                 if not action_taken and self._tasks_in_state(1) and ci3_activo:
                     task = self._tasks_in_state(1)[0]
                     print(f"\n[P2] CI3 active — transferring task {task.id} ({task.flavor})")
