@@ -373,7 +373,7 @@ class RobotMain(object):
             self._arm.set_cgpio_digital(1, 1)
             self._arm.set_cgpio_digital(2, 0)
             self._arm.set_cgpio_digital(3, 0)
-            time.sleep(0.5)
+            time.sleep(1.5)
             self._arm.set_cgpio_digital(1, 0)
             self._arm.set_cgpio_digital(2, 0)
             self._arm.set_cgpio_digital(3, 0)
@@ -518,7 +518,7 @@ class RobotMain(object):
                 self._arm.set_cgpio_digital(2, 0)
                 self._arm.set_cgpio_digital(3, 1)
             
-            time.sleep(0.5) 
+            time.sleep(1.5) 
             
             # Reset all outputs to 0
             self._arm.set_cgpio_digital(1, 0)
