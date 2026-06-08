@@ -29,7 +29,7 @@ IGuiPage
 	{
 		id: q486539290
 		objId: 486539290
-		x: 160
+		x: 136
 		y: 208
 		width: 240
 		height: 56
@@ -55,7 +55,7 @@ IGuiPage
 	{
 		id: q301989888
 		objId: 301989888
-		x: 464
+		x: 429
 		y: 152
 		width: 294
 		height: 294
@@ -69,7 +69,7 @@ IGuiPage
 	{
 		id: q486539291
 		objId: 486539291
-		x: 160
+		x: 136
 		y: 280
 		width: 240
 		height: 56
@@ -95,7 +95,7 @@ IGuiPage
 	{
 		id: q486539292
 		objId: 486539292
-		x: 160
+		x: 136
 		y: 352
 		width: 240
 		height: 56
@@ -121,7 +121,7 @@ IGuiPage
 	{
 		id: q671088674
 		objId: 671088674
-		x: 168
+		x: 144
 		y: 216
 		width: 40
 		height: 40
@@ -137,7 +137,7 @@ IGuiPage
 	{
 		id: q671088675
 		objId: 671088675
-		x: 168
+		x: 144
 		y: 288
 		width: 40
 		height: 40
@@ -153,7 +153,7 @@ IGuiPage
 	{
 		id: q671088676
 		objId: 671088676
-		x: 168
+		x: 144
 		y: 360
 		width: 40
 		height: 40

@@ -12,24 +12,24 @@ IGuiPage
 	{
 		id: q671088672
 		objId: 671088672
-		x: 288
+		x: 224
 		y: 136
-		width: 224
+		width: 352
 		height: 240
 		qm_BorderWidth: 1
 		qm_TextColor: "#ff181c31"
 		qm_FillColor: "#ffdedbde"
-		qm_RectangleWidth: 224
+		qm_RectangleWidth: 352
 		qm_RectangleHeight: 240
 	}
 	IGuiTextField
 	{
 		id: q268435478
 		objId: 268435478
-		x: 287
-		y: 176
-		width: 226
-		height: 71
+		x: 255
+		y: 160
+		width: 290
+		height: 95
 		qm_Transparent : true 
 		qm_TextColor: "#ff31344a"
 		qm_ValueVarTextAlignmentHorizontal: Text.AlignHCenter
@@ -44,7 +44,7 @@ IGuiPage
 		id: q301989894
 		objId: 301989894
 		x: 320
-		y: 232
+		y: 224
 		width: 160
 		height: 152
 		qm_Transparent : true 
@@ -58,7 +58,7 @@ IGuiPage
 		id: q268435479
 		objId: 268435479
 		x: 262
-		y: 32
+		y: 40
 		width: 276
 		height: 47
 		qm_Transparent : true 

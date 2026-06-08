@@ -54,9 +54,9 @@ IGuiPage
 	{
 		id: q268435482
 		objId: 268435482
-		x: 206
+		x: 170
 		y: 328
-		width: 388
+		width: 460
 		height: 39
 		qm_BorderCornerRadius: 3
 		qm_BorderWidth: 2

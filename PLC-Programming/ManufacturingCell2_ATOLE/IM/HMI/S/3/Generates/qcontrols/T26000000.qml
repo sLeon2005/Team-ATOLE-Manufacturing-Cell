@@ -69,4 +69,20 @@ IGuiTemplate
 		qm_SourceSizeWidth: 34
 		qm_SourceSizeHeight: 45
 	}
+	IGuiRectangle
+	{
+		id: q671088677
+		objId: 671088677
+		x: 8
+		y: 8
+		width: 784
+		height: 56
+		qm_BorderWidth: 2
+		qm_TextColor: "#ff848284"
+		qm_Transparent : true 
+		qm_BorderStyle: 0
+		qm_RectangleRadiusHorizontal: 2
+		qm_RectangleRadiusVertical: 28
+		qm_FillStyle: true
+	}
 }

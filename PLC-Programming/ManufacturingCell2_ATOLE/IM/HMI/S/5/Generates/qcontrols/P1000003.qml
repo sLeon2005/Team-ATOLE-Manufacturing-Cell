@@ -418,4 +418,21 @@ IGuiPage
 		qm_SwichOnSide: false
 		qm_SwitchOnValue: 1
 	}
+	IGuiTextField
+	{
+		id: q268435488
+		objId: 268435488
+		x: 400
+		y: 432
+		width: 393
+		height: 48
+		qm_Transparent : true 
+		qm_TextColor: "#ff31344a"
+		qm_ValueVarTextAlignmentHorizontal: Text.AlignRight
+		qm_ValueVarTextAlignmentVertical: Text.AlignVCenter
+		qm_Anchors.bottomMargin: 2
+		qm_Anchors.leftMargin: 3
+		qm_Anchors.rightMargin: 2
+		qm_Anchors.topMargin: 2
+	}
 }
