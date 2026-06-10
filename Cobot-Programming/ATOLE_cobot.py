@@ -182,15 +182,6 @@ class RobotMain(object):
         return False
 
     # =========================================================================
-    # EXTRA GRIPPER ENERGY SAVING LOGIC
-    # =========================================================================
-    def _gripper_off(self):
-        """Shuts down gripper motor currents to prevent heating when not carrying parts."""
-        if self.is_alive:
-            code = self._arm.stop_lite6_gripper()
-            self._check_code(code, 'stop_lite6_gripper')
-
-    # =========================================================================
     # GPIO LOGIC & SENSING
     # =========================================================================
     def _gpio_match(self, pattern, timeout=0.05):
@@ -315,9 +306,6 @@ class RobotMain(object):
                                       speed=self._tcp_speed, mvacc=self._tcp_acc, radius=0.0, wait=True)
         if not self._check_code(code, 'set_position'): return False
         time.sleep(0.5)
-        
-        # Piece dropped and neutral reached: Safe to set gripper off
-        self._gripper_off()
         return True
 
     def _conveyor_to_conveyor_transfer(self):
@@ -362,9 +350,6 @@ class RobotMain(object):
         code = self._arm.set_position(*[self.ASSEMBLY_X, self.ASSEMBLY_Y, 86.5, 180.0, 0.0, 90.0],
                                       speed=self._tcp_speed, mvacc=self._tcp_acc, radius=0.0, wait=True)
         if not self._check_code(code, 'set_position'): return False
-        
-        # Piece released on Assembly station and robot retracted: Safe to set gripper off
-        self._gripper_off()
         return True
 
     def _send_co1(self):
@@ -430,10 +415,8 @@ class RobotMain(object):
         code = self._arm.set_position(*[self.ASSEMBLY_X, self.ASSEMBLY_Y, 150.0, 180.0, 0.0, 90.0],
                                       speed=self._tcp_speed, mvacc=self._tcp_acc, radius=0.0, wait=True)
         if not self._check_code(code, 'set_position'): return False
+        
         time.sleep(0.5)
-
-        # Lid assembled and arm moved back up clear of parts: Safe to set gripper off
-        self._gripper_off()
         return True
 
     def _paletizar_pastel(self, flavor):
@@ -512,9 +495,6 @@ class RobotMain(object):
         if not self._check_code(code, 'set_position'): return False
 
         self.global_pallet_count += 1
-        
-        # Palletizing sequence done and neutral position reached: Safe to set gripper off
-        self._gripper_off()
         return True
 
     def _colocar_tapa_separadora(self, es_tapa_final=False):
@@ -565,9 +545,6 @@ class RobotMain(object):
 
         code = self._arm.set_position(*[100.0, 243.4, 193.3, 180.0, 0.0, -45.0], speed=self._tcp_speed, mvacc=self._tcp_acc, radius=0.0, wait=True)
         if not self._check_code(code, 'set_position'): return False
-        
-        # Separator lid sequence finished: Safe to set gripper off
-        self._gripper_off()
         return True
 
     # =========================================================================
@@ -583,11 +560,10 @@ class RobotMain(object):
         """Removes tasks in state 6 (Completed) to free up pipeline slots."""
         before = len(self.active_tasks)
         self.active_tasks = [t for t in self.active_tasks if t.state != 6]
-        max_concurrent_local = MAX_CONCURRENT
         removed = before - len(self.active_tasks)
         if removed:
             print(f"[MGMT] {removed} completed task(s) purged. "
-                  f"Active slots: {len(self.active_tasks)}/{max_concurrent_local}")
+                  f"Active slots: {len(self.active_tasks)}/{MAX_CONCURRENT}")
 
     # =========================================================================
     # MAIN EXECUTION LOOP
@@ -598,11 +574,11 @@ class RobotMain(object):
         print("Synchronizing initial state with the arm...")
         for i in range(50):
             if self._arm.connected and self._arm.state < 4:
-                print(f"    Arm ready at iteration {i} (state={self._arm.state})")
+                print(f"   Arm ready at iteration {i} (state={self._arm.state})")
                 break
             time.sleep(0.1)
         else:
-            print(f"    WARNING: Arm not ready after 5s "
+            print(f"   WARNING: Arm not ready after 5s "
                   f"(connected={self._arm.connected}, state={self._arm.state})")
 
         if not self.is_alive:
@@ -612,9 +588,6 @@ class RobotMain(object):
         try:
             print("System ready. Starting pipelining loop (max. "
                   f"{MAX_CONCURRENT} concurrent cakes)...")
-            
-            # Initial safe-state: Turn gripper off upon boot up sequence
-            self._gripper_off()
 
             while self.is_alive:
                 # 1. PRE-ITERATION: Purge completed tasks to free slots
@@ -683,41 +656,43 @@ class RobotMain(object):
                     print(f"[P3] Task {task.id} → state=4, ready for palletizing")
                     action_taken = True
 
-                # PRIORITY 4: Inject a new cake order into the pipeline if slot available
-                if not action_taken and len(self.active_tasks) < MAX_CONCURRENT:
-                    flavor_solicitado = self._detect_flavor()
-                    if flavor_solicitado is not None:
-                        idx_columna = self.cake_count[flavor_solicitado]
-                        if idx_columna < 3:
-                            new_task = CakeTask(flavor_solicitado, idx_columna)
+                # PRIORITY 4: Initiate new production
+                if not action_taken and self._active_count() < MAX_CONCURRENT:
+                    flavor = self._detect_flavor()
+                    if flavor is not None:
+                        idx = self.cake_count[flavor]
+                        
+                        # SAFETY CHECK: Prevent requesting the same tray column twice 
+                        # if the PLC sends a new signal before the previous task advances.
+                        already_in_progress = any(t.flavor == flavor and t.idx == idx for t in self.active_tasks)
+                        
+                        if not already_in_progress:
+                            print(f"\n[P4] New task: {flavor} col={idx+1}, pallet={self.global_pallet_count+1}/8")
+                            new_task = CakeTask(flavor, idx)
+                            
+                            if not self._pick_place_1st(flavor, idx):
+                                return
+                            
+                            # CRITICAL LOGIC: Update the tray column index IMMEDIATELY 
+                            # upon successful pick. This reserves the next column for 
+                            # any subsequent PLC requests of the same flavor, preventing 
+                            # the robot from trying to pick from an already-empty slot.
+                            self.cake_count[flavor] = (idx + 1) % 3
+
                             new_task.state = 1
                             new_task.ci3_deadline = time.monotonic() + CI3_TIMEOUT
                             self.active_tasks.append(new_task)
-                            
-                            print(f"\n[P4] New order accepted: {flavor_solicitado} (col {idx_columna+1}) → Assigned Task ID: {new_task.id}")
-                            print(f"[P4] Pipeline slots occupied: {len(self.active_tasks)}/{MAX_CONCURRENT}")
-                            
-                            self.cake_count[flavor_solicitado] += 1
-                            
-                            print(f"[P4] Executing Pick & Place Base for Task {new_task.id}...")
-                            if not self._pick_place_1st(new_task.flavor, new_task.idx): return
-                            
-                            print(f"[P4] Task {new_task.id} → state=1, awaiting CI3 sensor (timeout {CI3_TIMEOUT}s)")
+                            print(f"[P4] Task {new_task.id} registered → state=1, awaiting CI3. "
+                                  f"Active tasks: {self._active_count()}/{MAX_CONCURRENT}")
                             action_taken = True
-                        else:
-                            # Tray empty warning for this specific flavor
-                            pass
 
-                # 5. GRIPPER SAFE IDLE STATE
-                # If no physical action was executed in this loop cycle and pipeline is empty/waiting,
-                # ensure the gripper is kept powered down to eliminate residual heat generation.
-                if not action_taken and len(self.active_tasks) == 0:
-                    self._gripper_off()
-                
-                time.sleep(0.05)
+                # 5. IDLE: Brief pause to prevent GPIO bus saturation when no action is taken
+                if not action_taken:
+                    time.sleep(0.01)
 
         except Exception as e:
-            self.pprint('MainLoop Exception: {}'.format(e))
+            self.pprint(f"Exception in execution loop: {e}")
+            traceback.print_exc()
         finally:
             self.alive = False
             self._arm.release_error_warn_changed_callback(self._error_warn_changed_callback)
@@ -726,8 +701,13 @@ class RobotMain(object):
                 self._arm.release_count_changed_callback(self._count_changed_callback)
 
 
+# =============================================================================
+# ENTRY POINT
+# =============================================================================
 if __name__ == '__main__':
     RobotMain.pprint('xArm-Python-SDK Version:{}'.format(version.__version__))
-    arm = XArmAPI('192.168.1.168', baud_checkset=False)
+    IP_ROBOT = '192.168.1.168'
+    print(f"Connecting directly to xArm at: {IP_ROBOT}...")
+    arm = XArmAPI(IP_ROBOT, baud_checkset=False)
     robot_main = RobotMain(arm)
     robot_main.run()
