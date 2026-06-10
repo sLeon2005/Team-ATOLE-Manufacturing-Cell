@@ -212,7 +212,9 @@ Main features:
 
 The board allows the PLC to identify authorized operators and restrict access to critical manufacturing functions.
 
-![RFID PCB](assets/rfid_pcb.jpg)
+<p align="center">
+  <img src="assets/rfid_pcb.jpg" width="500">
+</p>
 
 ---
 
