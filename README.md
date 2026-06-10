@@ -1,4 +1,4 @@
-# Team ATOLE Manufacturing Cell
+# 🏭 Team ATOLE Manufacturing Cell
 ### PLC Coordination · Computer Vision · Collaborative Robotics · IIoT Monitoring · Cybersecurity
 
 ![Manufacturing Cell](assets/hero_cell.jpg)
@@ -17,13 +17,13 @@ The system simulates an automated pastry production facility capable of:
 
 ---
 
-# Project Overview
+# 📖 Project Overview
 
 The project combines machining, industrial automation, robotics, cybersecurity, and Industrial IoT into a single integrated manufacturing system.
 
 The complete solution is divided into two major subsystems:
 
-## Plant 1 – Machining & Industrial IoT Monitoring
+## ⚙️ Plant 1 – Machining & Industrial IoT Monitoring
 
 A custom Aluminum 6061 workpiece was designed, manufactured, and monitored during machining operations.
 
@@ -41,7 +41,7 @@ The collected data is transmitted through MQTT and visualized in real time using
 
 ---
 
-## Plant 2 – Automated Manufacturing Cell
+## 🏭 Plant 2 – Automated Manufacturing Cell
 
 The manufacturing cell is controlled by two Siemens S7-1200 PLCs interconnected through industrial Ethernet communication.
 
@@ -59,7 +59,7 @@ The production process includes:
 
 ---
 
-# System Architecture
+# 🏗️ System Architecture
 
 ![System Architecture](assets/system_architecture.png)
 
@@ -78,7 +78,7 @@ The architecture integrates:
 
 ---
 
-# Industrial Automation
+# 🎛️ Industrial Automation
 
 The automation layer was implemented using two Siemens S7-1200 PLCs communicating through an S7 network.
 
@@ -95,7 +95,7 @@ Key features include:
 
 ---
 
-# Computer Vision
+# 👁️ Computer Vision
 
 A Cognex industrial vision sensor acts as the cell’s quality gate.
 
@@ -113,7 +113,7 @@ The detected classification is transmitted directly to the PLC network and autom
 
 ---
 
-# Collaborative Robotics
+# 🤖 Collaborative Robotics
 
 A UFACTORY xArm Lite 6 collaborative robot performs:
 
@@ -128,7 +128,7 @@ The robot was programmed in Python using the xArm SDK and operates through a Fin
 
 ---
 
-# Industrial IoT Monitoring
+# 📡 Industrial IoT Monitoring
 
 A custom monitoring cabinet was developed around:
 
@@ -150,7 +150,7 @@ without requiring direct electrical connection to the machine power circuit.
 
 ---
 
-# MQTT & Node-RED Dashboard
+# 📊 MQTT & Node-RED Dashboard
 
 Process variables are published through MQTT and visualized through a Node-RED dashboard.
 
@@ -167,7 +167,7 @@ Available metrics include:
 
 ---
 
-# RFID Cybersecurity
+# 🔐 RFID Cybersecurity
 
 An RFID authentication system was integrated to restrict access to critical HMI functions.
 
@@ -177,11 +177,11 @@ Only authorized operators are allowed to access or modify manufacturing paramete
 
 ---
 
-# Custom Hardware Development
+# 🔧 Custom Hardware Development
 
 Several custom-designed hardware components were developed specifically for this project.
 
-## IoT Monitoring PCB
+## 💻 IoT Monitoring PCB
 
 Custom PCB for:
 
@@ -194,7 +194,46 @@ Custom PCB for:
 
 ---
 
-## Custom End Effectors
+# 🔧 Custom Hardware Development
+
+Several custom electronic and mechanical systems were designed and fabricated specifically for this project.
+
+## 🔐 RFID Access Control PCB
+
+A custom PCB based on the ATmega328P was designed to provide RFID-based operator authentication.
+
+Main features:
+
+- ATmega328P microcontroller
+- RFID card reader
+- Relay outputs for PLC interfacing
+- User identification system
+- HMI access control
+
+The board allows the PLC to identify authorized operators and restrict access to critical manufacturing functions.
+
+![RFID PCB](assets/rfid_pcb.jpg)
+
+---
+
+## 📡 IoT Energy Monitoring System
+
+A dedicated Industrial IoT monitoring system was developed to analyze the electrical consumption of the ROMI T240 lathe.
+
+Hardware used:
+
+- ESP32
+- SCT-013 Current Transformer
+- ADS1115 16-bit ADC
+- Signal conditioning circuit
+
+The system was implemented on a prototyping board and publishes real-time data through MQTT for remote monitoring and energy analysis.
+
+![IoT Monitoring System](assets/iot_monitoring.jpg)
+
+---
+
+## 🦾 Custom End Effectors
 
 Custom grippers were designed and manufactured to handle:
 
@@ -207,9 +246,9 @@ Custom grippers were designed and manufactured to handle:
 
 ---
 
-# Manufacturing
+# 🛠️ Manufacturing
 
-## Custom Machined Component
+## ⚙️ Custom Machined Component
 
 A stepped Aluminum 6061 workpiece was designed in Fusion 360 and manufactured on a ROMI T240 lathe.
 
@@ -221,7 +260,7 @@ The part serves both as a manufactured component and as a reference object for t
 
 ---
 
-# Software & Engineering Tools
+# 🧰 Software & Engineering Tools
 
 - Siemens TIA Portal
 - Siemens Plant Simulation
@@ -236,7 +275,7 @@ The part serves both as a manufactured component and as a reference object for t
 
 ---
 
-# Results
+# 📈 Results
 
 The final system successfully demonstrated:
 
@@ -262,11 +301,11 @@ The final system successfully demonstrated:
 
 ---
 
-# Team
+# 👥 Team
 
 **Team ATOLE**
 
-Tecnológico de Monterrey — Querétaro Campus
+Tecnológico de Monterrey, Campus Querétaro
 
 B.S. in Mechatronics Engineering
 
@@ -278,6 +317,6 @@ B.S. in Mechatronics Engineering
 
 ---
 
-# License
+# 📄 License
 
 This project is licensed under the MIT License.
